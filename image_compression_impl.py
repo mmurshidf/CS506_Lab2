@@ -4,11 +4,55 @@ from PIL import Image
 
 # Function to load and preprocess the image
 def load_image(image_path):
-    raise NotImplementedError('You need to implement this function')
+    """
+    Load the image from a file and return it as a NumPy array.
+
+    Parameters:
+    - image_path (str): The path to the image file.
+
+    Returns:
+    - np.array: The image as a NumPy array.
+    """
+    # Open the image using Pillow and convert it to RGB mode
+    image = Image.open(image_path).convert('RGB')
+    
+    # Convert the image to a NumPy array
+    image_np = np.array(image)
+    
+    return image_np
 
 # Function to perform KMeans clustering for image quantization
 def image_compression(image_np, n_colors):
-    raise NotImplementedError('You need to implement this function')
+    """
+    Compress the image by reducing the number of colors using KMeans clustering.
+
+    Parameters:
+    - image_np (np.array): The image as a NumPy array (H x W x C).
+    - n_colors (int): The number of colors to reduce the image to.
+
+    Returns:
+    - np.array: The compressed image as a NumPy array.
+    """
+    # Get the dimensions of the image
+    h, w, c = image_np.shape
+    
+    # Reshape the image to a 2D array of pixels (each pixel is a row with 3 columns for RGB)
+    pixels = image_np.reshape(-1, 3)
+    
+    # Apply KMeans clustering to the pixel data
+    kmeans = KMeans(n_clusters=n_colors, random_state=42)
+    kmeans.fit(pixels)
+    
+    # Get the cluster centers (these will be the new colors)
+    new_colors = kmeans.cluster_centers_.astype('uint8')
+    
+    # Map each pixel to its nearest cluster center
+    labels = kmeans.labels_
+    
+    # Replace each pixel with its corresponding new color
+    compressed_image_np = new_colors[labels].reshape(h, w, c)
+    
+    return compressed_image_np
 
 # Function to concatenate and save the original and quantized images side by side
 def save_result(original_image_np, quantized_image_np, output_path):
